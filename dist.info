@@ -1,0 +1,14 @@
+type = [[all]]
+arch = [[Universal]]
+short = [['pythonic.optparse' Command-line argument parsing similar to Python's optparse library]]
+author = [[David Manura]]
+full = [[]]
+maintainer = [[David Manura <http://lua-users.org/wiki/DavidManura>]]
+version = [[0.1]]
+homepage = [[http://lua-users.org/wiki/ModulePythonicOptparse]]
+license = [[MIT]]
+name = [[pythonic.optparse]]
+dependencies = {
+	['lua'] = [[>=5.1]],
+}
+
