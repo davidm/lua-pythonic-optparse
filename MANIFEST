@@ -1,6 +1,7 @@
 COPYRIGHT
 MANIFEST
-pythonic.optparse-0.1.0-1.rockspec
+README.txt
+pythonic.optparse.rockspec
 dist.info
 util.mk
-module/lmod/pythonic/optparse.lua
+lmod/pythonic/optparse.lua

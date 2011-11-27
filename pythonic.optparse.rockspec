@@ -1,7 +1,7 @@
 package = "pythonic.optparse"
-version = "0.1.0-1"
+version = "$(_VERSION)"
 source = {
-   url = "http://math2.org/download/lua-pythonic-optparse-0.1.tar.gz",
+   url = "http://math2.org/download/lua-pythonic-optparse-FIX.tar.gz",
 }
 description = {
    summary    = "'pythonic.optparse' Command-line argument parsing similar to Python's optparse library",
@@ -16,7 +16,7 @@ build = {
   type = "none",
   install = {
      lua = {
-        ["pythonic.optparse"] = "module/lmod/pythonic/optparse.lua",
+        ["pythonic.optparse"] = "lmod/pythonic/optparse.lua",
      }
   }
 }
