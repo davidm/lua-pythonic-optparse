@@ -1,7 +1,9 @@
-COPYRIGHT
+COPYRIGHT.txt
 MANIFEST
 README.txt
-pythonic.optparse.rockspec
+rockspec.in
 dist.info
 util.mk
 lmod/pythonic/optparse.lua
+test/example.lua
+test/test.lua

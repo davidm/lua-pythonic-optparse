@@ -85,7 +85,7 @@ LICENSE
 
  --]]
 
- local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='000.003.2011-11-28'}
+ local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='0.3.20111128'}
  
 local ipairs = ipairs
 local unpack = unpack
