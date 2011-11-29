@@ -1,29 +1,103 @@
--- lua-optparse [1]
--- Lua-based partial reimplementation of Python's optparse[2-3] command-line
--- parsing module.
---
--- Note: Python also supports getopt[4].
---
--- References
---  [1] http://lua-users.org/wiki/CommandLineParsing
---  [2] http://docs.python.org/lib/optparse-defining-options.html
---  [3] http://blog.doughellmann.com/2007/08/pymotw-optparse.html
---  [4] http://docs.python.org/lib/module-getopt.html
---
--- (c) 2008 David Manura.  Licensed under the same terms as Lua (MIT).
+--[[
 
+LUA MODULE
+
+  pythonic.optparse - Lua-based partial reimplementation of Python's
+      optparse [2-3] command-line parsing module.
+
+SYNOPSIS
+
+  local OptionParser = require "pythonic.optparse" . OptionParser
+  local opt = OptionParser{usage="%prog [options] [gzip-file...]",
+                           version="foo 1.23", add_help_option=false}
+  opt.add_option{"-h", "--help", action="store_true", dest="help",
+                 help="give this help"}
+  opt.add_option{
+    "-f", "--force", dest="force", action="store_true",
+    help="force overwrite of output file"}
+
+  local options, args = opt.parse_args()
+
+  if options.help then opt.print_help(); os.exit(1) end
+  if options.force then print 'f' end
+  for _, name in ipairs(args) do print(name) end
+      
+DESCRIPTION
+
+  This library provides a command-line parsing[1] similar to Python optparse [2-3].
+
+  Note: Python also supports getopt [4].
+
+STATUS
+  
+  This module is fairly basic but could be expanded.
+  
+API
+
+  See source code and also compare to Python's docs [2,3] for details because
+  the following documentation is incomplete.
+  
+  opt = OptionParser {usage=usage, version=version, add_help_option=add_help_option}
+  
+    Create command line parser.
+  
+  opt.add_options{shortflag, longflag, action=action, metavar=metavar, dest=dest, help=help}
+  
+    Add command line option specification.  This may be called multiple times.
+ 
+  opt.parse_args() --> options, args
+  
+    Perform argument parsing.
+ 
+DEPENDENCIES
+
+  None (other than Lua 5.1 or 5.2)
+  
+REFERENCES
+
+  [1] http://lua-users.org/wiki/CommandLineParsing
+  [2] http://docs.python.org/lib/optparse-defining-options.html
+  [3] http://blog.doughellmann.com/2007/08/pymotw-optparse.html
+  [4] http://docs.python.org/lib/module-getopt.html
+
+LICENSE
+
+  (c) 2008-2011 David Manura.  Licensed under the same terms as Lua (MIT).
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+  (end license)
+
+ --]]
+
+ local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='000.003.2011-11-28'}
+ 
 local ipairs = ipairs
 local unpack = unpack
 local io = io
 local table = table
 local os = os
 local arg = arg
-local _G = _G
 
 
 local function OptionParser(t)
   local usage = t.usage
-  local version = t.version
+  --local version = t.version
 
   local o = {}
   local option_descriptions = {}
@@ -124,35 +198,8 @@ local function OptionParser(t)
 end
 
 
-local t = {}
-t.OptionParser = OptionParser
+M.OptionParser = OptionParser
 
 
-return t
+return M
 
-
---[[
-LICENSE
-
-Copyright (C) 2008, David Manura.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-
-(end license)
---]]
