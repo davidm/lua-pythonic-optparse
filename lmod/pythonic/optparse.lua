@@ -181,9 +181,13 @@ local function OptionParser(t)
     io.stdout:write("Usage: " .. usage:gsub('%%prog', arg[0]) .. "\n")
     io.stdout:write("\n")
     io.stdout:write("Options:\n")
+    local maxwidth = 0
     for _,optdesc in ipairs(option_descriptions) do
-      io.stdout:write("  " .. flags_str(optdesc) ..
-                      "  " .. optdesc.help .. "\n")
+      maxwidth = math.max(maxwidth, #flags_str(optdesc))
+    end
+    for _,optdesc in ipairs(option_descriptions) do
+      io.stdout:write("  " .. ('%-'..maxwidth..'s  '):format(flags_str(optdesc))
+                      .. optdesc.help .. "\n")
     end
   end
   if t.add_help_option == nil or t.add_help_option == true then
