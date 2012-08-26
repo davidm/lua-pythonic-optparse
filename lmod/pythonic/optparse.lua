@@ -206,6 +206,7 @@ local function OptionParser(t)
     for _,optdesc in ipairs(option_descriptions) do
       local help = optdesc.help or ''
       if optdesc.choices or optdesc.default then 
+        if #help>0 then help = help .. ' ' end
         help = help .. '('
         if  optdesc.choices then
           for i,v in ipairs(optdesc.choices) do
@@ -215,8 +216,9 @@ local function OptionParser(t)
         end
         if optdesc.choices and optdesc.default then help = help..' ; ' end
         if optdesc.default then
-          help = help .. ('default: %s)'):format(optdesc.default)
+          help = help .. 'default: '.. tostring(optdesc.default)
         end
+       help = help .. ')'
       end
       io.stdout:write("  " .. ('%-'..maxwidth..'s  '):format(flags_str(optdesc))
                       .. help .. "\n")
