@@ -91,13 +91,8 @@ LICENSE
 
  local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='0.3.20120826'}
  
-local ipairs = ipairs
-local unpack = unpack
-local io = io
-local table = table
-local os = os
-local arg = arg
-
+local arg,io,ipairs,math,os,table,tostring,unpack
+    = arg,io,ipairs,math,os,table,tostring,unpack
 
 local function OptionParser(t)
   local usage = t.usage
@@ -112,6 +107,12 @@ local function OptionParser(t)
     os.exit(1)
   end
 
+  local function is_in_list(list,val) 
+    for _,v in ipairs(list) do 
+      if v == val then return true end
+    end
+  end 
+  
   function o.add_option(optdesc)
     option_descriptions[#option_descriptions+1] = optdesc
     for _,v in ipairs(optdesc) do
@@ -144,6 +145,10 @@ local function OptionParser(t)
           i = i + 1
           val = arg[i]
           if not val then o.fail('option requires an argument ' .. v) end
+          if optdesc.choices and not is_in_list(optdesc.choices, val) then
+            o.fail(('illegal value for option %s: %s'):format(v,val)) 
+            val = nil
+          end
         elseif action == 'store_true' then
           val = true
         elseif action == 'store_false' then
@@ -200,8 +205,18 @@ local function OptionParser(t)
     end
     for _,optdesc in ipairs(option_descriptions) do
       local help = optdesc.help or ''
-      if optdesc.default then 
-        help = help .. (' (default: %s)'):format(optdesc.default)
+      if optdesc.choices or optdesc.default then 
+        help = help .. '('
+        if  optdesc.choices then
+          for i,v in ipairs(optdesc.choices) do
+            if i>1 then help = help.. '|' end
+            help = help..tostring(v)
+          end
+        end
+        if optdesc.choices and optdesc.default then help = help..' ; ' end
+        if optdesc.default then
+          help = help .. ('default: %s)'):format(optdesc.default)
+        end
       end
       io.stdout:write("  " .. ('%-'..maxwidth..'s  '):format(flags_str(optdesc))
                       .. help .. "\n")
