@@ -44,10 +44,14 @@ API
   opt.add_options{shortflag, longflag, action=action, metavar=metavar, dest=dest, help=help}
   
     Add command line option specification.  This may be called multiple times.
+     action: store|store_true|store_false. default is 'store'
+     dest: name of returned option table field. default is the last option-name. 
+        '-' is replaced with '_' 
+     metavar: name used in help text
  
-  opt.parse_args() --> options, args
+  opt.parse_args(arglist) --> options, args
   
-    Perform argument parsing.
+    Perform argument parsing. arglist is optional, defaults to global varable 'arg'
  
 DEPENDENCIES
 
@@ -113,12 +117,15 @@ local function OptionParser(t)
     for _,v in ipairs(optdesc) do
       option_of[v] = optdesc
     end
+    local dest = optdesc.dest or optdesc[#optdesc]:match('^%-+(.*)') -- fallback to last option
+    optdesc.dest = dest:gsub('-','_') 
+    optdesc.metavar = optdesc.metavar or dest:upper()
   end
-  function o.parse_args()
+  function o.parse_args(_arg)
     -- expand options (e.g. "--input=file" -> "--input", "file")
-    local arg = {unpack(arg)}
+    local arg = {unpack(_arg or arg)}
     for i=#arg,1,-1 do local v = arg[i]
-      local flag, val = v:match('^(%-%-%w+)=(.*)')
+      local flag, val = v:match('^(%-%-[%w_-]+)=(.*)')
       if flag then
         arg[i] = flag
         table.insert(arg, i+1, val)
@@ -166,7 +173,7 @@ local function OptionParser(t)
     for _,flag in ipairs(optdesc) do
       local sflagend
       if action == nil or action == 'store' then
-        local metavar = optdesc.metavar or optdesc.dest:upper()
+        local metavar = optdesc.metavar
         sflagend = #flag == 2 and ' ' .. metavar
                               or  '=' .. metavar
       else
