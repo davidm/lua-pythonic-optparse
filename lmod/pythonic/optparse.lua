@@ -41,7 +41,7 @@ API
   
     Create command line parser.
   
-  opt.add_options{shortflag, longflag, action=action, metavar=metavar, dest=dest, help=help}
+  opt.add_options{shortflag, longflag, action=action, metavar=metavar, dest=dest, help=help, default=default}
   
     Add command line option specification.  This may be called multiple times.
      action: store|store_true|store_false. default is 'store'
@@ -164,6 +164,12 @@ local function OptionParser(t)
       io.stdout:write(t.version .. "\n")
       os.exit()
     end
+    for _,optdesc in ipairs(option_descriptions) do
+      local name = optdesc.dest
+      if optdesc.default and (options[name] == nil) then
+         options[name] = optdesc.default
+      end
+    end
     return options, args
   end
 
@@ -193,8 +199,12 @@ local function OptionParser(t)
       maxwidth = math.max(maxwidth, #flags_str(optdesc))
     end
     for _,optdesc in ipairs(option_descriptions) do
+      local help = optdesc.help or ''
+      if optdesc.default then 
+        help = help .. (' (default: %s)'):format(optdesc.default)
+      end
       io.stdout:write("  " .. ('%-'..maxwidth..'s  '):format(flags_str(optdesc))
-                      .. optdesc.help .. "\n")
+                      .. help .. "\n")
     end
   end
   if t.add_help_option == nil or t.add_help_option == true then
