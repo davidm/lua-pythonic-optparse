@@ -44,10 +44,11 @@ API
   opt.add_options{shortflag, longflag, action=action, metavar=metavar, dest=dest, help=help, default=default}
   
     Add command line option specification.  This may be called multiple times.
-     action: store|store_true|store_false. default is 'store'
-     dest: name of returned option table field. default is the last option-name. 
+     action: 'store'|'store_true'|'store_false'. Default is 'store'
+     dest: name of returned option table field. Default is the last option-name. 
         '-' is replaced with '_' 
      metavar: name used in help text
+     type: 'int'|'float'|'number'. Default is string
  
   opt.parse_args(arglist) --> options, args
   
@@ -113,6 +114,11 @@ local function OptionParser(t)
     end
   end 
   
+  local function luatype(otype)
+     if (otype == 'int' or otype == 'float' or otype == 'number' ) then return 'number' end
+     return 'string'
+  end
+  
   function o.add_option(optdesc)
     option_descriptions[#option_descriptions+1] = optdesc
     for _,v in ipairs(optdesc) do
@@ -121,6 +127,9 @@ local function OptionParser(t)
     local dest = optdesc.dest or optdesc[#optdesc]:match('^%-+(.*)') -- fallback to last option
     optdesc.dest = dest:gsub('-','_') 
     optdesc.metavar = optdesc.metavar or dest:upper()
+    if optdesc.default then
+      assert( type( optdesc.default) == luatype(optdesc.type), 'default type mismatch, option '..optdesc[#optdesc] )
+    end
   end
   function o.parse_args(_arg)
     -- expand options (e.g. "--input=file" -> "--input", "file")
@@ -145,6 +154,18 @@ local function OptionParser(t)
           i = i + 1
           val = arg[i]
           if not val then o.fail('option requires an argument ' .. v) end
+          if luatype(optdesc.type) == 'number' then
+            local num = tonumber(val)
+            if num then 
+              if optdesc.type == 'int' and (num ~= math.floor(num)) then
+                o.fail(('option %s: number %s not an int'):format(v,val)) 
+                num = nil
+              end
+            else
+            o.fail(('option %s: %s not a %s'):format(v,val,optdesc.type)) 
+            end
+            val = num 
+          end
           if optdesc.choices and not is_in_list(optdesc.choices, val) then
             o.fail(('illegal value for option %s: %s'):format(v,val)) 
             val = nil
