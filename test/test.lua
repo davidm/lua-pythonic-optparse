@@ -2,7 +2,7 @@ package.path = './lmod/?.lua;'..package.path
 
 arg = { '-d', '-l', 'DEBUG' , 'localhost', '60000', [0] = 'testdeamon'}  -- set global arg
 
-local OP = require 'optparse'
+local OP = require 'pythonic.optparse'
 
 local opt = OP.OptionParser{usage="%prog [options] address port \n", version='0.0', add_help_option=false}
 opt.add_option{'-h', '--help',          help = 'show this help message and exit', action='store_true' }
