@@ -90,10 +90,10 @@ LICENSE
 
  --]]
 
- local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='0.3.20120826'}
+ local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='0.4.20120827'}
  
-local arg,io,ipairs,math,os,table,tostring,unpack
-    = arg,io,ipairs,math,os,table,tostring,unpack
+local arg,assert,io,ipairs,math,os,table,tonumber,tostring,type,unpack
+    = arg,assert,io,ipairs,math,os,table,tonumber,tostring,type,unpack
 
 local function OptionParser(t)
   local usage = t.usage
