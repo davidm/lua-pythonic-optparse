@@ -57,5 +57,6 @@ check_errorcase({  '--bogous', 'foo'},  'invalid option --bogous')
 check_errorcase({  '-l' },              'option requires an argument -l')
 check_errorcase({  '-l', 'DEADLY' },    'illegal value for option -l: DEADLY')
 check_errorcase({  '-s', '6f' },        'option -s: 6f not a int')
+check_errorcase({  '-s', '3.14' },      'option -s: number 3.14 not an int')
 
 print 'DONE'
