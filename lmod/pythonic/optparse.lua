@@ -41,13 +41,18 @@ API
   
     Create command line parser.
   
-  opt.add_options{shortflag, longflag, action=action, metavar=metavar, dest=dest, help=help}
+  opt.add_options{shortflag, longflag, action=action, metavar=metavar, dest=dest, help=help, default=default}
   
     Add command line option specification.  This may be called multiple times.
+     action: 'store'|'store_true'|'store_false'. Default is 'store'
+     dest: name of returned option table field. Default is the last option-name. 
+        '-' is replaced with '_' 
+     metavar: name used in help text
+     type: 'int'|'float'|'number'. Default is string
  
-  opt.parse_args() --> options, args
+  opt.parse_args(arglist) --> options, args
   
-    Perform argument parsing.
+    Perform argument parsing. arglist is optional, defaults to global varable 'arg'
  
 DEPENDENCIES
 
@@ -85,15 +90,10 @@ LICENSE
 
  --]]
 
- local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='0.3.20111128'}
+ local M = {_TYPE='module', _NAME='pythonic.optparse', _VERSION='0.4.20120827'}
  
-local ipairs = ipairs
-local unpack = unpack
-local io = io
-local table = table
-local os = os
-local arg = arg
-
+local arg,assert,io,ipairs,math,os,table,tonumber,tostring,type,unpack
+    = arg,assert,io,ipairs,math,os,table,tonumber,tostring,type,unpack
 
 local function OptionParser(t)
   local usage = t.usage
@@ -108,17 +108,34 @@ local function OptionParser(t)
     os.exit(1)
   end
 
+  local function is_in_list(list,val) 
+    for _,v in ipairs(list) do 
+      if v == val then return true end
+    end
+  end 
+  
+  local function luatype(otype)
+     if (otype == 'int' or otype == 'float' or otype == 'number' ) then return 'number' end
+     return 'string'
+  end
+  
   function o.add_option(optdesc)
     option_descriptions[#option_descriptions+1] = optdesc
     for _,v in ipairs(optdesc) do
       option_of[v] = optdesc
     end
+    local dest = optdesc.dest or optdesc[#optdesc]:match('^%-+(.*)') -- fallback to last option
+    optdesc.dest = dest:gsub('-','_') 
+    optdesc.metavar = optdesc.metavar or dest:upper()
+    if optdesc.default then
+      assert( type( optdesc.default) == luatype(optdesc.type), 'default type mismatch, option '..optdesc[#optdesc] )
+    end
   end
-  function o.parse_args()
+  function o.parse_args(_arg)
     -- expand options (e.g. "--input=file" -> "--input", "file")
-    local arg = {unpack(arg)}
+    local arg = {unpack(_arg or arg)}
     for i=#arg,1,-1 do local v = arg[i]
-      local flag, val = v:match('^(%-%-%w+)=(.*)')
+      local flag, val = v:match('^(%-%-[%w_-]+)=(.*)')
       if flag then
         arg[i] = flag
         table.insert(arg, i+1, val)
@@ -137,6 +154,22 @@ local function OptionParser(t)
           i = i + 1
           val = arg[i]
           if not val then o.fail('option requires an argument ' .. v) end
+          if luatype(optdesc.type) == 'number' then
+            local num = tonumber(val)
+            if num then 
+              if optdesc.type == 'int' and (num ~= math.floor(num)) then
+                o.fail(('option %s: number %s not an int'):format(v,val)) 
+                num = nil
+              end
+            else
+            o.fail(('option %s: %s not a %s'):format(v,val,optdesc.type)) 
+            end
+            val = num 
+          end
+          if optdesc.choices and not is_in_list(optdesc.choices, val) then
+            o.fail(('illegal value for option %s: %s'):format(v,val)) 
+            val = nil
+          end
         elseif action == 'store_true' then
           val = true
         elseif action == 'store_false' then
@@ -157,6 +190,12 @@ local function OptionParser(t)
       io.stdout:write(t.version .. "\n")
       os.exit()
     end
+    for _,optdesc in ipairs(option_descriptions) do
+      local name = optdesc.dest
+      if optdesc.default and (options[name] == nil) then
+         options[name] = optdesc.default
+      end
+    end
     return options, args
   end
 
@@ -166,7 +205,7 @@ local function OptionParser(t)
     for _,flag in ipairs(optdesc) do
       local sflagend
       if action == nil or action == 'store' then
-        local metavar = optdesc.metavar or optdesc.dest:upper()
+        local metavar = optdesc.metavar
         sflagend = #flag == 2 and ' ' .. metavar
                               or  '=' .. metavar
       else
@@ -178,7 +217,7 @@ local function OptionParser(t)
   end
 
   function o.print_help()
-    io.stdout:write("Usage: " .. usage:gsub('%%prog', arg[0]) .. "\n")
+    io.stdout:write("Usage: " .. usage:gsub('%%prog', arg[0] or '') .. "\n")
     io.stdout:write("\n")
     io.stdout:write("Options:\n")
     local maxwidth = 0
@@ -186,8 +225,24 @@ local function OptionParser(t)
       maxwidth = math.max(maxwidth, #flags_str(optdesc))
     end
     for _,optdesc in ipairs(option_descriptions) do
+      local help = optdesc.help or ''
+      if optdesc.choices or optdesc.default then 
+        if #help>0 then help = help .. ' ' end
+        help = help .. '('
+        if  optdesc.choices then
+          for i,v in ipairs(optdesc.choices) do
+            if i>1 then help = help.. '|' end
+            help = help..tostring(v)
+          end
+        end
+        if optdesc.choices and optdesc.default then help = help..' ; ' end
+        if optdesc.default then
+          help = help .. 'default: '.. tostring(optdesc.default)
+        end
+       help = help .. ')'
+      end
       io.stdout:write("  " .. ('%-'..maxwidth..'s  '):format(flags_str(optdesc))
-                      .. optdesc.help .. "\n")
+                      .. help .. "\n")
     end
   end
   if t.add_help_option == nil or t.add_help_option == true then
