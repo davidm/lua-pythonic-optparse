@@ -11,6 +11,7 @@ opt.add_option{'-l', '--log-level',     choices = {'DEBUG', 'INFO', 'WARN', 'ERR
 opt.add_option{      '--logfile',       help = 'Name of logfile', metavar='FILE' }
 opt.add_option{'-c', '--config',        help = 'Name of configfile',  default = '/etc/opt/test', metavar='FILE' }
 opt.add_option{'-s', '--check-interval',help = 'Seconds between checking config',  type='int',  dest='ci', default = 15 , metavar='SEC'}
+opt.add_option{      '--check-float',   help = 'Check floating raft',  type='float', metavar='liters'}
 --opt.print_help()
 
 local options, args = opt.parse_args() -- use global arg
@@ -20,17 +21,20 @@ assert(options.config=='/etc/opt/test') -- default value
 assert(options.daemon==true)            -- -d
 assert(options.logfile == nil)
 assert(options.ci == 15)           -- dest, default
+assert(options.check_float == nil)
 assert(#args == 2)
 assert(args[1] == 'localhost')
 assert(args[2] == '60000')
 
 -- Next case, now passing arg as paramenter
-options, args = opt.parse_args{ 'localhost',  '60001', '-l', 'FATAL', '-s', '60' , '--config', '/home/test/config', '--logfile', '/var/log/test'  }
+options, args = opt.parse_args{ 'localhost',  '60001', '-l', 'FATAL', '-s', '60' , 
+   '--config', '/home/test/config', '--logfile', '/var/log/test', '--check-float=3.14' }
 assert(options.log_level=='FATAL')
 assert(options.config=='/home/test/config') -- config
 assert(options.logfile == '/var/log/test')
 assert(options.daemon==nil) 
-assert(options.ci == 60)           -- dest, default
+assert(options.ci == 60)            -- dest, default
+assert(options.check_float == 3.14) -- float and --name=var syntax
 assert(#args == 2)
 assert(args[1] == 'localhost')
 assert(args[2] == '60001')
